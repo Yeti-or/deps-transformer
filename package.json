@@ -1,0 +1,24 @@
+{
+  "name": "deps-transformer",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run lint && npm run specs",
+    "specs": "mocha tests",
+    "lint": "jshint . && jscs .",
+    "cover": "istanbul cover _mocha -- tests"
+  },
+  "author": "Vasiliy Loginevskiy <yeti.or@gmail.com>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "cst-helpers": "0.0.3"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.4",
+    "jscs": "^3.0.7",
+    "jshint": "^2.9.2",
+    "mocha": "^2.5.3"
+  }
+}

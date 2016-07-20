@@ -303,14 +303,22 @@ describe('remove i-bem__html:', () => {
             `({
                 mustDeps: {
                     block: 'i-bem'
-                }
+                },
+                shouldDeps: [
+                    {block: 'i-bem', elem: 'i18n'},
+                    {block: 'i-bem', elems: 'i18n'}
+                ]
             });`;
 
             var transformedDepFile =
             `({
                 mustDeps: {
                     block: 'i-bem'
-                }
+                },
+                shouldDeps: [
+                    {block: 'i-bem', elem: 'i18n'},
+                    {block: 'i-bem', elems: 'i18n'}
+                ]
             });`;
 
             processDep(depFile, transformedDepFile);

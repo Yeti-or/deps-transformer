@@ -1,6 +1,6 @@
 var helpers = require('cst-helpers');
 
-module.exports = function(opts) {
+module.exports = function(/* opts */) {
 
 return function(tree) {
 
@@ -36,7 +36,7 @@ function arrayIndexOfElementValue(arr, val) {
     return index;
 }
 
-tree.selectNodesByType('ObjectExpression').forEach(obj => {
+tree.selectNodesByType('ObjectExpression').forEach(function(obj) {
     var blockProp = helpers.getPropFromObjectByKeyName(obj, 'block');
     if (!blockProp || blockProp.value.value !== rBlock) { return; }
 

@@ -3,11 +3,11 @@ var expect = chai.expect;
 
 var cst = require('cst');
 
-var parser = new cst.Parser()
+var parser = new cst.Parser();
 
-var transform = require('.')();
+var transform = require('..')();
 
-var processDep = function(from, to, comment) {
+var processDep = function(from, to) {
     var tree = parser.parse(from);
     transform(tree);
     expect(tree.getSourceCode()).to.eql(to);
@@ -105,7 +105,6 @@ describe('remove i-bem__html:', () => {
                     block: 'i-ua'
                 }
             });`;
-
 
             var transformedDepFile =
             `({
@@ -423,7 +422,6 @@ describe('remove i-bem__html:', () => {
                     block: 'i-bem', elem: ['html'], mods: {type: 'link'}
                 }
             });`;
-
 
             var transformedDepFile =
             `({

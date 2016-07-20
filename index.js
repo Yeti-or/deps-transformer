@@ -21,17 +21,17 @@ var rBlock = opts.tenorok.block;
 var rElem = opts.tenorok.elem;
 
 function removeEmpty(el) {
-	var next = el.parentElement;
-	if (next.type === 'ArrayExpression') {
-		helpers.removeElementFromArray(next, el);
-		next.elements.length === 0 && removeEmpty(next);
-	}
-	if (next.type === 'ObjectExpression') {
-		helpers.removePropertyFromObject(next, el);
+    var next = el.parentElement;
+    if (next.type === 'ArrayExpression') {
+        helpers.removeElementFromArray(next, el);
+        next.elements.length === 0 && removeEmpty(next);
+    }
+    if (next.type === 'ObjectExpression') {
+        helpers.removePropertyFromObject(next, el);
         helpers.removePropertyFromObjectByKeyName(next, 'tech');
-		next.properties.length === 0 && removeEmpty(next);
-	}
-	if (next.type === 'ObjectProperty') {
+        next.properties.length === 0 && removeEmpty(next);
+    }
+    if (next.type === 'ObjectProperty') {
         removeEmpty(next);
     }
 }

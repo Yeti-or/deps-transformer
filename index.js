@@ -1,11 +1,24 @@
 var helpers = require('cst-helpers');
 
-module.exports = function(/* opts */) {
+// TODO: move to cst-helpers
+function arrayIndexOfElementValue(arr, val) {
+    var index = -1;
+    for (var i = 0; i < arr.elements.length; i++) {
+        var el = arr.elements[i];
+        if (el.value === val) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+module.exports = function(opts) {
 
 return function(tree) {
 
-var rBlock = 'i-bem';
-var rElem = 'html';
+var rBlock = opts.tenorok.block;
+var rElem = opts.tenorok.elem;
 
 function removeEmpty(el) {
 	var next = el.parentElement;
@@ -21,19 +34,6 @@ function removeEmpty(el) {
 	if (next.type === 'ObjectProperty') {
         removeEmpty(next);
     }
-}
-
-// TODO: move to cst-helpers
-function arrayIndexOfElementValue(arr, val) {
-    var index = -1;
-    for (var i = 0; i < arr.elements.length; i++) {
-        var el = arr.elements[i];
-        if (el.type === 'StringLiteral' && el.value === val) {
-            index = i;
-            break;
-        }
-    }
-    return index;
 }
 
 tree.selectNodesByType('ObjectExpression').forEach(function(obj) {

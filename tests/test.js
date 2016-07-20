@@ -5,7 +5,7 @@ var cst = require('cst');
 
 var parser = new cst.Parser();
 
-var transform = require('..')();
+var transform = require('..')({tenorok: {block: 'i-bem', elem: 'html'}});
 
 var processDep = function(from, to) {
     var tree = parser.parse(from);

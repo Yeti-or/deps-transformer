@@ -4,69 +4,72 @@ module.exports = function(opts) {
 
 return function(tree) {
 
-tree.selectNodesByType('StringLiteral').forEach(lit => {
-	if (lit.value === 'i-bem') {
-		var prop = lit.parentElement;
-		var obj = prop.parentElement;
+var rBlock = 'i-bem';
+var rElem = 'html';
 
-		obj.properties.forEach(prop => {
-			if (prop.key.name === 'elems' || prop.key.name === 'elem') {
-			   // elem: 'dom' -> elem: ['dom']
-			   if (prop.value.type === 'StringLiteral') {
-				   var newArr = new types.ArrayExpression([
-					   new Token('Punctuator', '['),
-					   prop.value.cloneElement(),
-					   new Token('Punctuator', ']')
-				   ]);
-
-				   prop.replaceChild(newArr, prop.value);
-			   }
-			   if (prop.value.type === 'ArrayExpression') {
-				   for (var i = 0; i < prop.value.elements.length; i++) {
-					   var el = prop.value.elements[i];
-					   if (el.type === 'StringLiteral' && el.value === 'html') {
-						   //removeElementFromArray(el, prop.value);
-						   helpers.removeElementFromArray(prop.value, el);
-					   }
-				   }
-				   if (prop.value.elements.length === 0) {
-					   if (prop.key.name === 'elems') {
-						   // { block: 'i-bem', elems: [] } => { block: 'i-bem'}
-						   //removeElementFromObject(prop, obj);
-						   helpers.removePropertyFromObject(obj, prop);
-					   } else {
-						   // { block: 'i-bem', elem: [] } => { block: 'i-bem'}
-						   var hasMods = obj.properties.some((prop) => prop.key.name === 'mods');
-						   if (hasMods) {
-							   //removeElementFromObject(prop, obj);  
-							   helpers.removePropertyFromObject(obj, prop);
-						   } else {
-							   // mustDeps is always array
-							   var deps = obj.parentElement;
-							   if (deps.type === 'ArrayExpression') {
-								   // TODO: reWrite recursive
-								   //removeElementFromArray(obj, deps);
-								   helpers.removeElementFromArray(deps, obj);
-								   if (deps.elements.length === 0) {
-									   var propOfDep = deps.parentElement;
-									   var depsObj = propOfDep.parentElement;
-									   //removeElementFromObject(propOfDep, depsObj);
-									   helpers.removePropertyFromObject(depsObj, propOfDep);
-									   if (depsObj.properties.length === 0) {
-										   var arr = depsObj.parentElement;
-										   //removeElementFromArray(depsObj, arr);
-										   helpers.removeElementFromArray(arr, depsObj);
-									   }
-								   }
-							   }
-						   }
-					   }
-				   }
-			   }
-		   }
-		});
+function removeEmpty(el) {
+	var next = el.parentElement;
+	if (next.type === 'ArrayExpression') {
+		helpers.removeElementFromArray(next, el);
+		next.elements.length === 0 && removeEmpty(next);
 	}
+	if (next.type === 'ObjectExpression') {
+		helpers.removePropertyFromObject(next, el);
+        helpers.removePropertyFromObjectByKeyName(next, 'tech');
+		next.properties.length === 0 && removeEmpty(next);
+	}
+	if (next.type === 'ObjectProperty') {
+        removeEmpty(next);
+    }
+}
 
+// TODO: move to cst-helpers
+function arrayIndexOfElementValue(arr, val) {
+    var index = -1;
+    for (var i = 0; i < arr.elements.length; i++) {
+        var el = arr.elements[i];
+        if (el.type === 'StringLiteral' && el.value === val) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+tree.selectNodesByType('StringLiteral').forEach(literal => {
+    if (literal.value !== rBlock) { return; }
+    if (literal.parentElement.type !== 'ObjectProperty') { return; }
+    var obj = literal.parentElement.parentElement;
+
+    function removeElementPropFromDepObj(obj, prop, force) {
+        if (!prop) { return; }
+        var isSaveToRemoveElem = (force &&
+                !helpers.getPropFromObjectByKeyName(obj, 'mods'));
+
+        if (prop.value.type === 'StringLiteral') {
+            if (prop.value.value === rElem) {
+                helpers.removePropertyFromObject(obj, prop);
+                isSaveToRemoveElem && removeEmpty(obj);
+            }
+        }
+        if (prop.value.type === 'ArrayExpression') {
+            var arr = prop.value;
+            var index = arrayIndexOfElementValue(arr, rElem);
+            if (index !== -1) {
+                helpers.removeElementFromArray(arr, arr.elements[index]);
+                if (!arr.elements.length) {
+                    helpers.removePropertyFromObject(obj, prop);
+                    isSaveToRemoveElem && removeEmpty(obj);
+                }
+            }
+        }
+    }
+
+    var elemsProp = helpers.getPropFromObjectByKeyName(obj, 'elems');
+    removeElementPropFromDepObj(obj, elemsProp);
+
+    var elemProp = helpers.getPropFromObjectByKeyName(obj, 'elem');
+    removeElementPropFromDepObj(obj, elemProp, true);
 });
 
 };

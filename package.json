@@ -12,7 +12,7 @@
   "author": "Vasiliy Loginevskiy <yeti.or@gmail.com>",
   "license": "UNLICENSED",
   "dependencies": {
-    "cst-helpers": "0.0.3"
+    "cst-helpers": "0.0.5"
   },
   "devDependencies": {
     "chai": "^3.5.0",

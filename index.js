@@ -36,13 +36,17 @@ function arrayIndexOfElementValue(arr, val) {
     return index;
 }
 
-tree.selectNodesByType('StringLiteral').forEach(literal => {
-    if (literal.value !== rBlock) { return; }
-    if (literal.parentElement.type !== 'ObjectProperty') { return; }
-    var obj = literal.parentElement.parentElement;
+tree.selectNodesByType('ObjectExpression').forEach(obj => {
+    var blockProp = helpers.getPropFromObjectByKeyName(obj, 'block');
+    if (!blockProp || blockProp.value.value !== rBlock) { return; }
+
+    var elemsProp = helpers.getPropFromObjectByKeyName(obj, 'elems');
+    elemsProp && removeElementPropFromDepObj(obj, elemsProp);
+
+    var elemProp = helpers.getPropFromObjectByKeyName(obj, 'elem');
+    elemProp && removeElementPropFromDepObj(obj, elemProp, true);
 
     function removeElementPropFromDepObj(obj, prop, force) {
-        if (!prop) { return; }
         var isSaveToRemoveElem = (force &&
                 !helpers.getPropFromObjectByKeyName(obj, 'mods'));
 
@@ -64,12 +68,6 @@ tree.selectNodesByType('StringLiteral').forEach(literal => {
             }
         }
     }
-
-    var elemsProp = helpers.getPropFromObjectByKeyName(obj, 'elems');
-    removeElementPropFromDepObj(obj, elemsProp);
-
-    var elemProp = helpers.getPropFromObjectByKeyName(obj, 'elem');
-    removeElementPropFromDepObj(obj, elemProp, true);
 });
 
 };

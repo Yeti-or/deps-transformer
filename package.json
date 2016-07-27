@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npm run lint && npm run specs",
-    "specs": "mocha tests",
+    "pretest": "npm run lint",
+    "test": "npm run specs",
+    "specs": "mocha --recursive tests",
     "lint": "jshint . && jscs .",
-    "cover": "istanbul cover _mocha -- tests"
+    "cover": "istanbul cover _mocha -- --recursive tests"
   },
   "author": "Vasiliy Loginevskiy <yeti.or@gmail.com>",
   "license": "UNLICENSED",

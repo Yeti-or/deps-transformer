@@ -3,13 +3,14 @@ var expect = chai.expect;
 
 var cst = require('cst');
 
-var parser = new cst.Parser();
+var transform = require('../..')();
 
-var transform = require('..')({tenorok: {block: 'i-bem', elem: 'html'}});
+var parser = new cst.Parser();
+var remove = transform.remove({block: 'i-bem', elem: 'html'});
 
 var processDep = function(from, to) {
     var tree = parser.parse(from);
-    transform(tree);
+    remove(tree);
     expect(tree.getSourceCode()).to.eql(to);
 };
 

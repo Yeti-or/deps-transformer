@@ -3,10 +3,10 @@ var expect = chai.expect;
 
 var cst = require('cst');
 
-var transform = require('../..')();
-
 var parser = new cst.Parser();
-var remove = transform.remove({block: 'i-bem', elem: 'html'});
+
+var transform = require('../..')();
+var remove = transform.remove({block: 'i-bem'});
 
 var processDep = function(from, to) {
     var tree = parser.parse(from);
@@ -14,110 +14,239 @@ var processDep = function(from, to) {
     expect(tree.getSourceCode()).to.eql(to);
 };
 
-describe('remove i-bem__html:', () => {
+describe('remove block:', () => {
 
-    describe('from elems:', () => {
-
-        it('[\'dom\']', () => {
+    describe('basic', () => {
+        it('only block:', () => {
             var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elems: ['dom', 'html']
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elems: ['dom']
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-
-        });
-
-        it('[]', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elems: ['html']
-                }
-            });`;
-
-            var transformedDepFile =
             `({
                 mustDeps: {
                     block: 'i-bem'
                 }
             });`;
 
+            var transformedDepFile = `({});`;
+
             processDep(depFile, transformedDepFile);
         });
 
-        it('string', () => {
+        it('exact block:', () => {
             var depFile =
             `({
-                mustDeps: {
-                    block: 'i-bem', elems: 'html'
-                }
+                mustDeps: [
+                    {block: 'i-bem'},
+                    {block: 'i-ua'},
+                    {block: 'i-bem'}
+                ]
             });`;
 
             var transformedDepFile =
             `({
-                mustDeps: {
-                    block: 'i-bem'
-                }
+                mustDeps: [
+                    {block: 'i-ua'}
+                ]
             });`;
 
             processDep(depFile, transformedDepFile);
         });
 
+        it('should remove several tenoroks', () => {
+            var depFile =
+            `([{
+                mustDeps: [
+                    {block: 'i-bem', elems: ['dom', 'html']},
+                    {block: 'i-bem', elem: ['html']}
+                ],
+                shouldDeps: {
+                    block: 'i-bem', elem: ['html']
+                }
+            }, {
+                tech: 'bemhtml',
+                shouldDeps: {
+                    block: 'i-bem', elem: ['html']
+                }
+            }]);`;
+
+            var transformedDepFile =
+            `([{
+                mustDeps: [
+                    {block: 'i-bem', elem: ['dom', 'html']}
+                ]
+            }]);`;
+
+            processDep(depFile, transformedDepFile);
+        });
     });
 
-    describe('from elem:', () => {
+    describe('mustDeps/shouldDeps', () => {
 
-        it('[\'dom\']', () => {
+        it('mustDeps', () => {
             var depFile =
             `({
                 mustDeps: {
-                    block: 'i-bem', elem: ['dom', 'html']
+                    block: 'i-bem'
+                }
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
+        });
+
+        it('shouldDeps', () => {
+            var depFile =
+            `({
+                shouldDeps: {
+                    block: 'i-bem'
+                }
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
+        });
+
+        it('noDeps', () => {
+            var depFile =
+            `({
+                noDeps: {
+                    block: 'i-bem'
+                }
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
+        });
+
+        it('depsByTech', () => {
+            var depFile =
+            `({
+                tech: 'tmpl-spec.js',
+                mustDeps: {
+                    tech: 'bemhtml', block: 'i-bem'
+                }
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
+        });
+
+        it('not suchWowDeps', () => {
+            var depFile =
+            `({
+                suchWowDeps: {
+                    block: 'i-bem'
                 }
             });`;
 
             var transformedDepFile =
             `({
-                mustDeps: {
-                    block: 'i-bem', elem: ['dom']
+                suchWowDeps: {
+                    block: 'i-bem'
                 }
             });`;
 
             processDep(depFile, transformedDepFile);
+        });
+    });
 
+    describe('[] / {} / str', () => {
+        it('{}', () => {
+            var depFile =
+            `({
+                mustDeps: {
+                    block: 'i-bem'
+                }
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
         });
 
         it('[]', () => {
             var depFile =
             `({
-                mustDeps: {
-                    block: 'i-bem', elem: ['html']
-                },
-                shouldDeps: {
-                    block: 'i-ua'
-                }
+                mustDeps: [
+                    {block: 'i-bem'}
+                ]
             });`;
 
             var transformedDepFile =
-            `({
-                shouldDeps: {
-                    block: 'i-ua'
-                }
-            });`;
+            `({});`;
 
             processDep(depFile, transformedDepFile);
         });
 
-        it('string', () => {
+        it('str', () => {
+            var depFile =
+            `({
+                mustDeps: 'i-bem'
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
+        });
+
+        it('[str]', () => {
+            var depFile =
+            `({
+                mustDeps: [
+                    'i-bem'
+                ]
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
+        });
+
+        it('[str, {}]', () => {
+            var depFile =
+            `({
+                mustDeps: [
+                    'i-bem',
+                    {block: 'i-bem'}
+                ]
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
+
+            depFile =
+            `({
+                mustDeps: [
+                    'i-bem',
+                    {block: 'i-ua'}
+                ]
+            });`;
+
+            transformedDepFile =
+            `({
+                mustDeps: [
+                    {block: 'i-ua'}
+                ]
+            });`;
+
+            processDep(depFile, transformedDepFile);
+        });
+    });
+
+    describe('from deps with elem:', () => {
+
+        it('elem', () => {
             var depFile =
             `({
                 mustDeps: {
@@ -138,233 +267,68 @@ describe('remove i-bem__html:', () => {
             processDep(depFile, transformedDepFile);
         });
 
-    });
-
-    describe('mustDeps/shouldDeps', () => {
-
-        it('mustDeps', () => {
+        it('elems', () => {
             var depFile =
             `({
                 mustDeps: {
-                    block: 'i-bem', elems: ['html']
+                    block: 'i-bem', elems: 'html'
                 }
             });`;
 
             var transformedDepFile =
             `({
                 mustDeps: {
-                    block: 'i-bem'
+                    block: 'i-bem', elem: 'html'
                 }
             });`;
 
             processDep(depFile, transformedDepFile);
         });
 
-        it('shouldDeps', () => {
-            var depFile =
-            `({
-                shouldDeps: {
-                    block: 'i-bem', elems: ['html']
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                shouldDeps: {
-                    block: 'i-bem'
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('noDeps', () => {
-            var depFile =
-            `({
-                noDeps: {
-                    block: 'i-bem', elems: ['html']
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                noDeps: {
-                    block: 'i-bem'
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('depsByTech', () => {
-            var depFile =
-            `({
-                tech: 'tmpl-spec.js',
-                mustDeps: {
-                    tech: 'bemhtml', block: 'i-bem', elems: ['html']
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                tech: 'tmpl-spec.js',
-                mustDeps: {
-                    tech: 'bemhtml', block: 'i-bem'
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('not suchWowDeps', () => {
-            var depFile =
-            `({
-                suchWowDeps: {
-                    block: 'i-bem', elems: ['html']
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                suchWowDeps: {
-                    block: 'i-bem', elems: ['html']
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-    });
-
-    describe('mustDeps: [] / {}', () => {
-        it('{}', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elems: ['html']
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem'
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('[]', () => {
-            var depFile =
-            `({
-                mustDeps: [
-                    {block: 'i-bem', elems: ['html']}
-                ]
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: [
-                    {block: 'i-bem'}
-                ]
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
     });
 
     describe('don\'t remove', () => {
 
-        it('from comment', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elems: ['html']
-                },
-                shouldDeps: {
-                    block: 'i-bem', elems: [/*'html'*/]
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem'
-                },
-                shouldDeps: {
-                    block: 'i-bem', elems: [/*'html'*/]
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('from other blocks', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-wow', elems: ['html']
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-wow', elems: ['html']
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('block \'i-bem\' without __html', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem'
-                },
-                shouldDeps: [
-                    {block: 'i-bem', elem: 'i18n'},
-                    {block: 'i-bem', elems: 'i18n'}
-                ]
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem'
-                },
-                shouldDeps: [
-                    {block: 'i-bem', elem: 'i18n'},
-                    {block: 'i-bem', elems: 'i18n'}
-                ]
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('str: block \'i-bem\' without __html', () => {
+        it('if block name is in elem', () => {
             var depFile =
             `({
                 mustDeps: [
-                    'i-bem'
+                    { block: 'html', elems: ['i-bem'] },
+                    { block: 'html', elem: 'i-bem' }
                 ]
             });`;
 
             var transformedDepFile =
             `({
                 mustDeps: [
-                    'i-bem'
+                    { block: 'html', elems: ['i-bem'] },
+                    { block: 'html', elem: 'i-bem' }
                 ]
             });`;
 
             processDep(depFile, transformedDepFile);
         });
+
     });
 
-    describe('from elems: with mods', () => {
+    describe('with mods', () => {
 
-        it('[\'dom\']', () => {
+        it('mods', () => {
+            var depFile =
+            `({
+                mustDeps: {
+                    block: 'i-bem', mods: {type: 'link'}
+                }
+            });`;
+
+            var transformedDepFile =
+            `({});`;
+
+            processDep(depFile, transformedDepFile);
+
+        });
+
+        it('and elems', () => {
             var depFile =
             `({
                 mustDeps: {
@@ -375,7 +339,7 @@ describe('remove i-bem__html:', () => {
             var transformedDepFile =
             `({
                 mustDeps: {
-                    block: 'i-bem', elems: ['dom'], mods: {type: 'link'}
+                    block: 'i-bem', elem: ['dom', 'html']
                 }
             });`;
 
@@ -383,47 +347,7 @@ describe('remove i-bem__html:', () => {
 
         });
 
-        it('[]', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elems: ['html'], mods: {type: 'link'}
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', mods: {type: 'link'}
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('string', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elems: 'html', mods: {type: 'link'}
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', mods: {type: 'link'}
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-    });
-
-    describe('from elem with mods:', () => {
-
-        it('[\'dom\']', () => {
+        it('and elem', () => {
             var depFile =
             `({
                 mustDeps: {
@@ -432,50 +356,10 @@ describe('remove i-bem__html:', () => {
             });`;
 
             var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elem: ['dom'], mods: {type: 'link'}
-                }
-            });`;
+            `({});`;
 
             processDep(depFile, transformedDepFile);
 
-        });
-
-        it('[]', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elem: ['html'], mods: {type: 'link'}
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', mods: {type: 'link'}
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
-        });
-
-        it('string', () => {
-            var depFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', elem: 'html', mods: {type: 'link'}
-                }
-            });`;
-
-            var transformedDepFile =
-            `({
-                mustDeps: {
-                    block: 'i-bem', mods: {type: 'link'}
-                }
-            });`;
-
-            processDep(depFile, transformedDepFile);
         });
 
     });
@@ -582,39 +466,7 @@ describe('remove i-bem__html:', () => {
 
     });
 
-    it('should remove several tenoroks', () => {
-        var depFile =
-        `([{
-            mustDeps: [
-                {block: 'i-bem', elems: ['dom', 'html']},
-                {block: 'i-bem', elem: ['html']}
-            ],
-            shouldDeps: {
-                block: 'i-bem', elems: ['html']
-            }
-        }, {
-            tech: 'bemhtml',
-            shouldDeps: {
-                block: 'i-bem', elems: ['html']
-            }
-        }]);`;
-
-        var transformedDepFile =
-        `([{
-            mustDeps: [
-                {block: 'i-bem', elems: ['dom']}
-            ],
-            shouldDeps: {
-                block: 'i-bem'
-            }
-        }, {
-            tech: 'bemhtml',
-            shouldDeps: {
-                block: 'i-bem'
-            }
-        }]);`;
-
-        processDep(depFile, transformedDepFile);
+    describe('many', () => {
     });
 
 });

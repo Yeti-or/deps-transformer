@@ -7,13 +7,14 @@
     "pretest": "npm run lint",
     "test": "npm run specs",
     "specs": "mocha --recursive tests",
+    "tdd": "mocha --recursive -w tests",
     "lint": "jshint . && jscs .",
     "cover": "istanbul cover _mocha -- --recursive tests"
   },
   "author": "Vasiliy Loginevskiy <yeti.or@gmail.com>",
   "license": "UNLICENSED",
   "dependencies": {
-    "cst-helpers": "0.0.5"
+    "cst-helpers": "0.0.6"
   },
   "devDependencies": {
     "chai": "^3.5.0",

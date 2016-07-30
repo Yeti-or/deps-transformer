@@ -360,6 +360,42 @@ describe('remove i-bem__html:', () => {
 
             processDep(depFile, transformedDepFile);
         });
+
+        it('from elems without block', () => {
+            var depFile =
+            `({
+                mustDeps: {
+                    elems: 'html'
+                }
+            });`;
+
+            var transformedDepFile =
+            `({
+                mustDeps: {
+                    elems: 'html'
+                }
+            });`;
+
+            processDep(depFile, transformedDepFile);
+        });
+
+        it('from elem without block', () => {
+            var depFile =
+            `({
+                mustDeps: {
+                    elem: 'html'
+                }
+            });`;
+
+            var transformedDepFile =
+            `({
+                mustDeps: {
+                    elem: 'html'
+                }
+            });`;
+
+            processDep(depFile, transformedDepFile);
+        });
     });
 
     describe('from elems: with mods', () => {

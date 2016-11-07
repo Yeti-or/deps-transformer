@@ -14,13 +14,13 @@
   "author": "Vasiliy Loginevskiy <yeti.or@gmail.com>",
   "license": "UNLICENSED",
   "dependencies": {
-    "cst-helpers": "0.0.6"
+    "cst-helpers": "0.1.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "istanbul": "^0.4.4",
     "jscs": "^3.0.7",
     "jshint": "^2.9.2",
-    "mocha": "^2.5.3"
+    "mocha": "^3.1.2"
   }
 }
